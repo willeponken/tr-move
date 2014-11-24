@@ -1,0 +1,15 @@
+{
+  "name": "tr-move",
+  "version": "0.0.1",
+  "description": "Move finished torrents to new directory",
+  "main": "bin/tr-move",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "move",
+    "transmission"
+  ],
+  "author": "William Wennerström <william@megalicious.org>",
+  "license": "GPLv3"
+}

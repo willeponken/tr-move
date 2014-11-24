@@ -1,0 +1,130 @@
+#!/usr/bin/env node
+
+// vim: noai ts=4 sw=4 syntax=javascript:
+/*
+ * You may redistribute this program and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+var env = process.env;
+var fs = require('fs');
+var path = require('path');
+
+var torrent = {
+	dir: env.TR_TORRENT_DIR,
+	hash: env.TR_TORRENT_HASH,
+	id: env.TR_TORRENT_ID,
+	name: env.TR_TORRENT_NAME
+}
+
+var settings = {
+	/*
+	 * Add a new object named after the media type, and with a directory to put the torrent directory in.
+	 * Example:
+	 *	text: '/media/text'
+	 */
+	dir: {
+		movies: '/media/movies',
+		music: '/media/music'
+	},
+	
+	/* Add the media type extensions in an array, with the same name as the object above.
+	 * The higher up in the 'ext' objects the media type is, the higher priority.
+	 * Example:
+	 * 	text: ['txt', 'pdf', 'csv']
+	 */
+	ext: {
+		movies: ['mp4', 'mkv', 'avi', 'flv', 'm4v', 'wmv', 'mov', 'mpg', 'swf', '3gp', '3g2', 'asf', 'asx'],
+		music: ['aif', 'iff', 'm3u', 'm4a', 'mid', 'mp3', 'mpa', 'ra', 'wav', 'wma', 'flac']
+	}
+
+	/*
+     * !!! THIS IS NOT IMPLEMENTED YET !!!
+	 * Options for move operation.
+	 */	
+	//mv: {
+	//	include: '', // RegEx, include matched files / directories
+	//	exclude: '' // RegEx, exclude matched files / directories
+	//}
+}
+
+/*
+ * Get all the files in a torrent directory
+ */
+// http://stackoverflow.com/a/20525865
+function getFiles(dir, files_) {
+	files_ = files_ || [];
+	if (typeof files_ === 'undefined') files_ = [];
+	var files = fs.readdirSync(dir);
+	for (var i in files) {
+		if (!files.hasOwnProperty(i)) continue;
+		var name = dir + '/' + files[i];
+		if (fs.statSync(name).isDirectory()) {
+			getFiles(name, files_);
+		} else {
+			files_.push(name);
+		}
+	}
+	return files_;
+}
+
+/*
+ * Check the extension type for the files, returns the folder for the first media type that is found
+ */
+function checkType(files, extensions, dirs) {
+	for(var file = 0; file < files.length; file++) {
+		for(var type in extensions) {
+			for(var ext in extensions[type]) {
+				var media = '.' + extensions[type][ext];
+				if (media === path.extname(files[file])) {
+					console.log('[checkType] File: "%s" is of type "%s"', files[file], type);
+					return dirs[type];
+				}
+			}
+		}
+	}
+}
+
+/*
+ * Get the first letter of string, uppercase and return it
+ */
+function firstLetter(string) {
+	return string.charAt(0).toUpperCase();
+}
+
+/*
+ * Move the torrent directory to a new directory, based on type and first letter
+ */
+function moveTorrent(torrent, dir, callback) {
+	var exec = require('child_process').exec;
+    var newDir = path.join(dir, firstLetter(torrent.name), torrent.name);
+	var oldDir = torrent.dir;
+
+	console.log('[moveTorrent] Moving "%s" to "%s"', oldDir, newDir);
+    // Using 'mv' because node's fs sucks, should probably replace with streams and support for regex,
+    // would also be nice to give an option to use https://github.com/wackou/guessit
+    exec('mv -v ' + oldDir + ' ' + newDir, function(err, stdout) {
+        if (err) {
+            return callback('[moveTorrent] Error: ' + err, null);
+        } else {
+            return callback(null, '[moveTorrent] Successfully moved "' + oldDir + '" to "' + newDir);
+        }
+    });
+}
+
+moveTorrent(torrent, checkType(getFiles(torrent.dir), settings.ext, settings.dir), function(err, result) {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log(result);
+    }
+});
