@@ -20,42 +20,42 @@ var fs = require('fs');
 var path = require('path');
 
 var torrent = {
-dir: env.TR_TORRENT_DIR,
-     hash: env.TR_TORRENT_HASH,
-     id: env.TR_TORRENT_ID,
-     name: env.TR_TORRENT_NAME
-}
+    dir: env.TR_TORRENT_DIR,
+    hash: env.TR_TORRENT_HASH,
+    id: env.TR_TORRENT_ID,
+    name: env.TR_TORRENT_NAME
+};
 
 var settings = {
     /*
-     * Add a new object named after the media type, and with a directory to put the torrent directory in.
-     * Example:
-     *	text: '/media/text'
-     */
-dir: {
-movies: '/media/movies',
+    * Add a new object named after the media type, and with a directory to put the torrent directory in.
+    * Example:
+    *	text: '/media/text'
+    */
+    dir: {
+        movies: '/media/movies',
         music: '/media/music'
-     },
+    },
 
-     /* Add the media type extensions in an array, with the same name as the object above.
-      * The higher up in the 'ext' objects the media type is, the higher priority.
-      * Example:
-      * 	text: ['txt', 'pdf', 'csv']
-      */
-ext: {
-movies: ['mp4', 'mkv', 'avi', 'flv', 'm4v', 'wmv', 'mov', 'mpg', 'swf', '3gp', '3g2', 'asf', 'asx'],
+    /* Add the media type extensions in an array, with the same name as the object above.
+    * The higher up in the 'ext' objects the media type is, the higher priority.
+    * Example:
+    * 	text: ['txt', 'pdf', 'csv']
+    */
+    ext: {
+        movies: ['mp4', 'mkv', 'avi', 'flv', 'm4v', 'wmv', 'mov', 'mpg', 'swf', '3gp', '3g2', 'asf', 'asx'],
         music: ['aif', 'iff', 'm3u', 'm4a', 'mid', 'mp3', 'mpa', 'ra', 'wav', 'wma', 'flac']
-     }
+    }
 
-     /*
-      * !!! THIS IS NOT IMPLEMENTED YET !!!
-      * Options for move operation.
-      */	
-     //mv: {
-     //	include: '', // RegEx, include matched files / directories
-     //	exclude: '' // RegEx, exclude matched files / directories
-     //}
-}
+    /*
+    * !!! THIS IS NOT IMPLEMENTED YET !!!
+    * Options for move operation.
+    */	
+    //mv: {
+    //	include: '', // RegEx, include matched files / directories
+    //	exclude: '' // RegEx, exclude matched files / directories
+    //}
+};
 
 /*
  * Get all the files in a torrent directory
@@ -113,18 +113,18 @@ function moveTorrent(torrent, dir, callback) {
     // Using 'mv' because node's fs sucks, should probably replace with streams and support for regex,
     // would also be nice to give an option to use https://github.com/wackou/guessit
     exec('mv -v ' + oldDir + ' ' + newDir, function(err, stdout) {
-            if (err) {
+        if (err) {
             return callback('[moveTorrent] Error: ' + err, null);
-            } else {
+        } else {
             return callback(null, '[moveTorrent] Successfully moved "' + oldDir + '" to "' + newDir);
-            }
-            });
+        }
+    });
 }
 
 moveTorrent(torrent, checkType(getFiles(torrent.dir), settings.ext, settings.dir), function(err, result) {
-        if (err) {
+    if (err) {
         console.log(err);
-        } else {
+    } else {
         console.log(result);
-        }
-        });
+    }
+});
