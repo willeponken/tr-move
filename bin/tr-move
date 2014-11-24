@@ -112,7 +112,7 @@ function moveTorrent(torrent, dir, callback) {
     console.log('[moveTorrent] Moving "%s" to "%s"', oldDir, newDir);
     // Using 'mv' because node's fs sucks, should probably replace with streams and support for regex,
     // would also be nice to give an option to use https://github.com/wackou/guessit
-    exec('mv -v ' + oldDir + ' ' + newDir, function(err, stdout) {
+    exec('mv -v "' + oldDir + '" "' + newDir + '"', function(err, stdout) {
         if (err) {
             return callback('[moveTorrent] Error: ' + err, null);
         } else {
